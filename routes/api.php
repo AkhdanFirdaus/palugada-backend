@@ -33,6 +33,7 @@ Route::get('user/{id}/my-webinar', [WebinarController::class, 'myWebinar']);
 Route::get('user/{id}/diikuti', [WebinarController::class, 'joinedWebinar']);
 
 Route::get('penyelenggara', [UserController::class, 'listPenyelenggara']);
+Route::get('penyelenggara/{id}', [UserController::class, 'penyelenggaraDetail']);
 
 Route::resource('webinar', WebinarController::class);
 Route::post('webinar/daftar', [WebinarController::class, 'daftar']);

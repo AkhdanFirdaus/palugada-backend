@@ -24,6 +24,7 @@ class WebinarController extends Controller
             'users.*'
         )
             ->join('users', 'users.id', '=', 'webinars.penyelenggara_id')
+            ->orderBy('webinars.created_at', 'DESC')
             ->get();
         return WebinarResource::collection($webinars);
     }
@@ -127,6 +128,7 @@ class WebinarController extends Controller
             ->join('webinars', 'webinars.id', '=', 'pendaftar_webinars.webinar_id')
             ->join('users', 'users.id', '=', 'webinars.penyelenggara_id')
             ->where('pendaftar_webinars.user_id', $userId)
+            ->orderBy('webinars.tanggal', 'DESC')
             ->get();
         return WebinarResource::collection($data);
     }

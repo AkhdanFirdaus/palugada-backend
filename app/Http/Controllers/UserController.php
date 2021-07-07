@@ -94,8 +94,21 @@ class UserController extends Controller
             DB::raw('COUNT(webinars.id) AS count_webinar')
         )
             ->join('webinars', 'webinars.penyelenggara_id', 'users.id')
+            ->orderBy('users.name', 'ASC')
             ->groupBy('webinars.penyelenggara_id')
             ->get();
         return UserResource::collection($penyelenggara);
+    }
+
+    public function penyelenggaraDetail($userId)
+    {
+        $penyelenggara = User::select(
+                'users.*',
+                DB::raw('COUNT(webinars.id) AS count_webinar')
+            )
+            ->join('webinars', 'webinars.penyelenggara_id', 'users.id')
+            ->find($userId);
+        // dd($penyelenggara);
+        return new UserResource($penyelenggara);
     }
 }
