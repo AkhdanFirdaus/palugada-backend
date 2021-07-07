@@ -2,83 +2,100 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+
+    public function login(Request $request)
     {
-        //
+        $email = $request->email;
+        $password = $request->password;
+        if (Auth::attempt(['email' => $email, 'password' => $password])) {
+            $user = User::where('email', $email)->firstOrFail();
+            return new UserResource($user);
+        } else {
+            return response()->json([
+                "message" => "Invalid Credentials"
+            ]);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function loginWithId(Request $request)
     {
-        //
+        $user = Auth::loginUsingId($request->user_id);
+        if (isset($user)) {
+            return new UserResource($user);
+        } else {
+            return response()->json([
+                "message" => "User Not Found"
+            ]);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function showUser($id)
     {
-        //
+        $user = Auth::loginUsingId($id);
+        if (isset($user)) {
+            return new UserResource($user);
+        } else {
+            return response()->json([
+                "message" => "User Not Found"
+            ]);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function register(Request $request)
     {
-        //
+        $validate = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'nomor_telp' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required|string',
+            'asal' => 'required|string',
+            'role' => 'required|integer'
+        ]);
+
+        if ($validate->fails()) {
+            return response()->json([
+                'message' => 'Gagal Validasi'
+            ], 422);
+        }
+
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = Hash::make($request->password);
+        $user->nomor_telp = $request->nomor_telp;
+        $user->asal = $request->asal;
+        $user->role = (int) $request->role;
+        if ($user->save()) {
+            return response()->json([
+                'message' => 'Berhasil daftar',
+                'user_id' => $user->id
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'Gagal daftar'
+            ], 500);
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
+    public function listPenyelenggara()
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+        $penyelenggara = User::select(
+            'users.*',
+            DB::raw('COUNT(webinars.id) AS count_webinar')
+        )
+            ->join('webinars', 'webinars.penyelenggara_id', 'users.id')
+            ->groupBy('webinars.penyelenggara_id')
+            ->get();
+        return UserResource::collection($penyelenggara);
     }
 }
