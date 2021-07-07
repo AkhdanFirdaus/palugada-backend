@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
+use App\Models\Favorite;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -103,12 +104,39 @@ class UserController extends Controller
     public function penyelenggaraDetail($userId)
     {
         $penyelenggara = User::select(
-                'users.*',
-                DB::raw('COUNT(webinars.id) AS count_webinar')
-            )
+            'users.*',
+            DB::raw('COUNT(webinars.id) AS count_webinar')
+        )
             ->join('webinars', 'webinars.penyelenggara_id', 'users.id')
             ->find($userId);
         // dd($penyelenggara);
         return new UserResource($penyelenggara);
+    }
+
+    public function listFavorite($userId)
+    {
+        $data = Favorite::select('users.*', DB::raw('COUNT(webinars.id) AS count_webinar'))
+            ->join('webinars', 'webinars.penyelenggara_id', 'favorites.penyelenggara_id')
+            ->join('users', 'users.id', '=', 'favorites.penyelenggara_id')
+            ->where('favorites.user_id', $userId)
+            ->orderBy('users.created_at', 'DESC')
+            ->get();
+        return UserResource::collection($data);
+    }
+
+    public function favorite(Request $request)
+    {
+        $favorite = new Favorite();
+        $favorite->user_id = $request->user_id;
+        $favorite->penyelenggara_id = $request->penyelenggara_id;
+        if ($favorite->save()) {
+            return response()->json([
+                'message' => 'favorite',
+            ]);
+        } else {
+            return response()->json([
+                'message' => 'gagal favorite',
+            ]);
+        }
     }
 }

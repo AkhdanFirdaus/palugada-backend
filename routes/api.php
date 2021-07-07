@@ -31,9 +31,13 @@ Route::get('user/{id}', [UserController::class, 'showUser']);
 Route::get('user/{id}/count-webinar', [WebinarController::class, 'countMyWebinar']);
 Route::get('user/{id}/my-webinar', [WebinarController::class, 'myWebinar']);
 Route::get('user/{id}/diikuti', [WebinarController::class, 'joinedWebinar']);
+Route::get('user/{id}/favorite', [UserController::class, 'listFavorite']);
+Route::post('user/favorite', [UserController::class, 'favorite']);
+
 
 Route::get('penyelenggara', [UserController::class, 'listPenyelenggara']);
 Route::get('penyelenggara/{id}', [UserController::class, 'penyelenggaraDetail']);
 
 Route::resource('webinar', WebinarController::class);
+Route::get('webinar/penyelenggara/{id}', [WebinarController::class, 'webinarPenyelenggara']);
 Route::post('webinar/daftar', [WebinarController::class, 'daftar']);
