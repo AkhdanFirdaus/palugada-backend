@@ -31,7 +31,7 @@ class WebinarController extends Controller
             ->join('users', 'users.id', '=', 'webinars.penyelenggara_id')
             ->orderBy('webinars.created_at', 'DESC')
             ->get();
-        return WebinarResource::collection($webinars);
+        return response()->json(['data' => WebinarResource::collection($webinars)]);
     }
 
     /**
@@ -122,7 +122,7 @@ class WebinarController extends Controller
             'narasumber' => $narasumber
         ];
 
-        return new WebinarDetailResource($data);
+        return response()->json(['data' => new WebinarDetailResource($data)]);
     }
 
     public function countWebinar()
@@ -157,7 +157,7 @@ class WebinarController extends Controller
             ->join('users', 'users.id', '=', 'webinars.penyelenggara_id')
             ->where('webinars.penyelenggara_id', $userId)
             ->get();
-        return WebinarResource::collection($webinars);
+        return response()->json(['data' => WebinarResource::collection($webinars)]);
     }
 
     public function joinedWebinar($userId)
@@ -172,7 +172,7 @@ class WebinarController extends Controller
             ->where('pendaftar_webinars.user_id', $userId)
             ->orderBy('webinars.tanggal', 'DESC')
             ->get();
-        return WebinarResource::collection($data);
+        return response()->json(['data' => WebinarResource::collection($data)]);
     }
 
     public function daftar(Request $request)
@@ -196,13 +196,14 @@ class WebinarController extends Controller
         $webinars = Webinar::select(
             'webinars.id as webinar_id',
             'webinars.*',
-            'users.*'
+            'users.*',
         )
             ->join('users', 'users.id', '=', 'webinars.penyelenggara_id')
-            ->orderBy('webinars.created_at', 'DESC')
             ->where('webinars.penyelenggara_id', $userId)
+            ->orderBy('webinars.created_at', 'DESC')
             ->get();
-        return WebinarResource::collection($webinars);
+
+        return response()->json(['data' => WebinarResource::collection($webinars)]);
     }
 
     /**
